@@ -1,12 +1,42 @@
+local PremiumKeys = {  
+    "JRTtibghwXeykmqzh4r3oCvzf35xtb",  
+}  
+  
+local BlacklistKeys = {  
+    ["abc123"] = "Hành vi gian lận bị phát hiện",  
+    ["badkey456"] = "Vi phạm điều khoản sử dụng",  
+    ["xyz789"] = "Key đã bị thu hồi do lạm dụng"  
+}  
+  
+local function isPremiumKey(key)  
+    for _, v in ipairs(PremiumKeys) do  
+        if v == key then  
+            return true  
+        end  
+    end  
+    return false  
+end  
+  
+local function getBlacklistReason(key)  
+    return BlacklistKeys[key]  
+end  
+  
+if not script_key or getBlacklistReason(script_key) then  
+    local reason = getBlacklistReason(script_key) or "Key bị chặn"  
+    game:GetService("Players").LocalPlayer:Kick(reason)  
+    return  
+end  
+  
+if isPremiumKey(script_key) then  
 local SkUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/ziugpro/Tool-Hub/refs/heads/main/Tool-Hub-Ui"))()
 
 local UI = SkUI:CreateWindow("SkUI V1.73 - By Ziugpro")
 
-local Tab = UI:Create(105, "General")
-local Fire = UI:Create(145, "Camp Fire + Create")
+local Tab = UI:Create(105, "Tổng Quan")
+local Fire = UI:Create(145, "Lửa Trại + Tạo")
 local Web = UI:Create(110, "Webhook")
 Tab:AddTextLabel("Left", "Chest")
-Tab:AddToggle("Left", "Auto Open Chest (Auto)", false, function(v)
+Tab:AddToggle("Left", "Tự Động Mở Rương (Auto)", false, function(v)
     local Players = game:GetService("Players")
     local player = Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
@@ -67,11 +97,11 @@ Tab:AddToggle("Left", "Auto Open Chest (Auto)", false, function(v)
 end)
 local chestRange = 50
 
-Tab:AddSlider("Left", "Range Open Chest", 1, 100, 50, function(val)
+Tab:AddSlider("Left", "Rương Mở Tầm Xa", 1, 100, 50, function(val)
     chestRange = val
 end)
 
-Tab:AddToggle("Left", "Auto Open Chest (Near)", false, function(v)
+Tab:AddToggle("Left", "Rương Tự Động Mở (Gần)", false, function(v)
     local Players = game:GetService("Players")
     local player = Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
@@ -116,7 +146,7 @@ Tab:AddToggle("Left", "Auto Open Chest (Near)", false, function(v)
         _G.AutoChestNearby.running = false
     end
 end)
-Tab:AddButton("Left", "Teleport To Chest", function()
+Tab:AddButton("Left", "Dịch Chuyển Đến Rương", function()
     local Players = game:GetService("Players")
     local player = Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
@@ -141,7 +171,7 @@ Tab:AddButton("Left", "Teleport To Chest", function()
         humanoidRootPart.CFrame = targetPart.CFrame + Vector3.new(0, targetPart.Size.Y/2 + 6, 0)
     end
 end)
-Tab:AddButton("Left", "Teleport To Strong Axe (Testing)", function()
+Tab:AddButton("Left", "Dịch Chuyển Đến Rìu Mạnh (Thử Nghiệm)", function()
     local Players = game:GetService("Players")
     local player = Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
@@ -166,15 +196,15 @@ Tab:AddButton("Left", "Teleport To Strong Axe (Testing)", function()
         humanoidRootPart.CFrame = targetPart.CFrame + Vector3.new(0, targetPart.Size.Y/2 + 6, 0)
     end
 end)
-Tab:AddTextLabel("Left", "Kill")
+Tab:AddTextLabel("Left", "Giết")
 _G.killRange = _G.killRange or 10
 _G.killAuraConn = _G.killAuraConn or nil
 
-Tab:AddSlider("Left", "Kill Range", 1, 50, _G.killRange, function(val)
+Tab:AddSlider("Left", "Tầm Giết", 1, 50, _G.killRange, function(val)
     _G.killRange = val
 end)
 
-Tab:AddToggle("Left", "Kill Aura", false, function(enabled)
+Tab:AddToggle("Left", "Giết Aura", false, function(enabled)
     if _G.killAuraConn then
         _G.killAuraConn:Disconnect()
         _G.killAuraConn = nil
@@ -211,7 +241,7 @@ Tab:AddToggle("Left", "Kill Aura", false, function(enabled)
         end)
     end
 end)
-Tab:AddToggle("Left", "Kill Aura (Fixed)", false, function(v)
+Tab:AddToggle("Left", "Giết Aura (Đã Sửa)", false, function(v)
     local Players = game:GetService("Players")
     local player = Players.LocalPlayer
     local char = player.Character or player.CharacterAdded:Wait()
@@ -246,7 +276,7 @@ Tab:AddToggle("Left", "Kill Aura (Fixed)", false, function(v)
         _G.KillAuraa.running = false
     end
 end)
-Tab:AddToggle("Left", "Kill Aura (Testing)", false, function(v)
+Tab:AddToggle("Left", "Giết Aura (Thử Nghiệm)", false, function(v)
     local Players = game:GetService("Players")
     local player = Players.LocalPlayer
     local char = player.Character or player.CharacterAdded:Wait()
@@ -288,7 +318,7 @@ local humanoid = char:WaitForChild("Humanoid")
 
 local selectedTool = nil
 
-Tab:AddMultiDropdown("Left", "Select Tool", {}, {}, function(choices)
+Tab:AddMultiDropdown("Left", "Chọn Vũ Khí", {}, {}, function(choices)
     for _, tool in ipairs(player.Backpack:GetChildren()) do
         if tool:IsA("Tool") and table.find(choices, tool.Name) then
             selectedTool = tool.Name
@@ -296,7 +326,7 @@ Tab:AddMultiDropdown("Left", "Select Tool", {}, {}, function(choices)
     end
 end)
 
-Tab:AddToggle("Left", "Auto Farm", false, function(v)
+Tab:AddToggle("Left", "Tự Động Cày", false, function(v)
     if not _G.AutoFarm then
         _G.AutoFarm = {running = false}
     end
@@ -332,7 +362,7 @@ Tab:AddToggle("Left", "Auto Farm", false, function(v)
         _G.AutoFarm.running = false
     end
 end)
-Tab:AddTextLabel("Left", "Fly Up")
+Tab:AddTextLabel("Left", "Bay")
 local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
 local player = game.Players.LocalPlayer
@@ -342,7 +372,7 @@ local flyUpNightLoop = false
 local connAllTime
 local connNightOnly
 
-Tab:AddToggle("Left", "Fly Up (All Time)", false, function(v)
+Tab:AddToggle("Left", "Bay Lên (Mọi Thời Gian)", false, function(v)
     local character = player.Character
     if not character then return end
     local hrp = character:FindFirstChild("HumanoidRootPart")
@@ -366,7 +396,7 @@ Tab:AddToggle("Left", "Fly Up (All Time)", false, function(v)
     end
 end)
 
-Tab:AddToggle("Left", "Fly Up (Night Only)", false, function(v)
+Tab:AddToggle("Left", "Bay Lên (Chỉ Buổi Tối)", false, function(v)
     local character = player.Character
     if not character then return end
     local hrp = character:FindFirstChild("HumanoidRootPart")
@@ -397,10 +427,10 @@ Tab:AddToggle("Left", "Fly Up (Night Only)", false, function(v)
         humanoid.PlatformStand = false
     end
 end)
-Tab:AddTextLabel("Left", "Misc")
+Tab:AddTextLabel("Left", "Khác")
 local noclipEnabled = false
 
-Tab:AddToggle("Left", "Noclip", false, function(v)
+Tab:AddToggle("Left", "Xuyên Tường", false, function(v)
     noclipEnabled = v
     local player = game.Players.LocalPlayer
     if not player or not player.Character then return end
@@ -421,7 +451,7 @@ Tab:AddToggle("Left", "Noclip", false, function(v)
         end
     end
 end)
-Tab:AddButton("Left", "Through Wall", function()
+Tab:AddButton("Left", "Dịch Chuyển Xuyên Tường", function()
     local Players = game:GetService("Players")
     local Workspace = game:GetService("Workspace")
     local RunService = game:GetService("RunService")
@@ -471,7 +501,7 @@ Tab:AddButton("Left", "Through Wall", function()
         end
     end)
 end)
-Tab:AddToggle("Left", "Infinity Jump", false, function(v)
+Tab:AddToggle("Left", "Nhảy Vô Hạng", false, function(v)
     if _G.infinityJumpConn then
         _G.infinityJumpConn:Disconnect()
         _G.infinityJumpConn = nil
@@ -489,7 +519,7 @@ Tab:AddToggle("Left", "Infinity Jump", false, function(v)
         end)
     end
 end)
-Tab:AddToggle("Left", "No Shadows", false, function(v)
+Tab:AddToggle("Left", "Không Bóng Tối", false, function(v)
     _G.NoShadows = v
     if v then
         for _, obj in pairs(workspace:GetDescendants()) do
@@ -511,7 +541,7 @@ Tab:AddToggle("Left", "No Shadows", false, function(v)
 end)
 local player = game.Players.LocalPlayer
 
-Tab:AddToggle("Left", "God Mode", false, function(v)
+Tab:AddToggle("Left", "Bất Tử", false, function(v)
     _G.GodMode = v
     if v then
         while _G.GodMode do
@@ -529,14 +559,14 @@ Tab:AddToggle("Left", "God Mode", false, function(v)
     end
 end)
 Tab:RealLine("Left")
-Tab:AddTextLabel("Right", "Item")
+Tab:AddTextLabel("Right", "Vật Phẩm")
 local selectedModel = "Carrot"
 
-Tab:AddMultiDropdown("Right", "Select Item", {"Carrot", "Morsel", "Tree", "Bunny", "Log", "Rife"}, "Carrot", function(choice)
+Tab:AddMultiDropdown("Right", "Chọn Vật Phẩm", {"Carrot", "Morsel", "Tree", "Bunny", "Log", "Rife"}, "Carrot", function(choice)
     selectedModel = choice
 end)
 
-Tab:AddButton("Right", "Bring Model", function()
+Tab:AddButton("Right", "Mang Vật Phẩm", function()
     local player = game.Players.LocalPlayer
     if not player or not player.Character then return end
 
@@ -559,14 +589,14 @@ Tab:AddButton("Right", "Bring Model", function()
         model:SetPrimaryPartCFrame(rootPart.CFrame * CFrame.new(0, 0, -5))
     end
 end)
-Tab:AddTextLabel("Right", "Tree")
+Tab:AddTextLabel("Right", "Cây")
 local UIS = game:GetService("UserInputService")
 local player = game.Players.LocalPlayer
 
 local UIS = game:GetService("UserInputService")
 local player = game.Players.LocalPlayer
 
-Tab:AddToggle("Right", "Auto Chop Tree", false, function(v)
+Tab:AddToggle("Right", "Tự Động Chặt Cây", false, function(v)
     _G.AutoChop = v
     if v then
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
@@ -599,7 +629,7 @@ end)
 local UIS = game:GetService("UserInputService")
 local player = game.Players.LocalPlayer
 
-Tab:AddToggle("Right", "Auto Chop Tree (Teleport + Click)", false, function(v)
+Tab:AddToggle("Right", "Tự Động Chặt Cây (Dịch Chuyển + Nhấn)", false, function(v)
     _G.AutoChopTP = v
     if v then
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
@@ -633,7 +663,7 @@ end)
 local UIS = game:GetService("UserInputService")
 local player = game.Players.LocalPlayer
 
-Tab:AddToggle("Right", "Auto Chop Tree (Testing)", false, function(v)
+Tab:AddToggle("Right", "Tự Động Chặt Cây (Thử Nghiệm)", false, function(v)
     _G.AutoChopFake = v
     if v then
         while _G.AutoChopFake do
@@ -652,14 +682,14 @@ Tab:AddToggle("Right", "Auto Chop Tree (Testing)", false, function(v)
         _G.AutoChopFake = false
     end
 end)
-Tab:AddTextLabel("Right", "Local")
+Tab:AddTextLabel("Right", "Tốc Độ")
 local speed = 50
 
-Tab:AddSlider("Right", "Speed", 1, 300, 50, function(val)
+Tab:AddSlider("Right", "Tốc Độ", 1, 300, 50, function(val)
     speed = val
 end)
 
-Tab:AddButton("Right", "Set Speed", function()
+Tab:AddButton("Right", "Đặt Tốc Độ", function()
     local player = game.Players.LocalPlayer
     if not player or not player.Character then return end
 
@@ -668,7 +698,7 @@ Tab:AddButton("Right", "Set Speed", function()
         humanoid.WalkSpeed = speed
     end
 end)
-Tab:AddToggle("Right", "Speed Boost", false, function(Value)
+Tab:AddToggle("Right", "Tốc Độ Tối Đa", false, function(Value)
     _G.Speed100 = Value
 
     local player = game:GetService("Players").LocalPlayer
@@ -685,8 +715,8 @@ Tab:AddToggle("Right", "Speed Boost", false, function(Value)
     end
 end)
 Tab:RealLine("Right")
-Tab:AddTextLabel("Right", "Esp")
-Tab:AddToggle("Right", "🧍 Player ESP", false, function(v)
+Tab:AddTextLabel("Right", "Định Vị")
+Tab:AddToggle("Right", "Định Vị Người Chơi", false, function(v)
     _G.ToggleESPPlayers = v
 
     for _, player in pairs(game:GetService("Players"):GetPlayers()) do
@@ -738,7 +768,7 @@ Tab:AddToggle("Right", "🧍 Player ESP", false, function(v)
         end
     end
 end)
-Tab:AddToggle("Right", "🤖 NPC ESP", false, function(v)
+Tab:AddToggle("Right", "Định Vị NPC", false, function(v)
     _G.ToggleESPNPCs = v
 
     for _, model in pairs(workspace:GetDescendants()) do
@@ -794,7 +824,7 @@ Tab:AddToggle("Right", "🤖 NPC ESP", false, function(v)
         end
     end
 end)
-Tab:AddToggle("Right", "ESP Mob/Animal", false, function(v)
+Tab:AddToggle("Right", "Định Vị Quái Vật/Động Vật", false, function(v)
     _G.ToggleESPMobs = v
     for _, model in pairs(workspace:GetDescendants()) do
         if model:IsA("Model") and model:FindFirstChild("Humanoid") and model:FindFirstChild("HumanoidRootPart") then
@@ -843,7 +873,7 @@ Tab:AddToggle("Right", "ESP Mob/Animal", false, function(v)
         end
     end
 end)
-Tab:AddToggle("Right", "ESP Bolt", false, function(v)
+Tab:AddToggle("Right", "Định Vị Đinh Tán", false, function(v)
     _G.ESPBolt = v
     for _, model in pairs(workspace:GetDescendants()) do
         if model:IsA("Model") and model:FindFirstChild("HumanoidRootPart") and model.Name == "Bolt" then
@@ -889,7 +919,7 @@ Tab:AddToggle("Right", "ESP Bolt", false, function(v)
         end
     end
 end)
-Tab:AddToggle("Right", "ESP Log", false, function(v)
+Tab:AddToggle("Right", "Định Vị Gỗ", false, function(v)
     _G.ESPLog = v
     for _, model in pairs(workspace:GetDescendants()) do
         if model:IsA("Model") and model:FindFirstChild("HumanoidRootPart") and model.Name == "Log" then
@@ -938,8 +968,8 @@ end)
 Tab:RealLine("Right")
 
 --{ Tab Khác }--
-Fire:AddTextLabel("Left", "Camp Fire")
-Fire:AddToggle("Left", "Auto Fire (Teleport)", false, function(v)
+Fire:AddTextLabel("Left", "Lửa Trại")
+Fire:AddToggle("Left", "Tự Động Lửa (Dịch Chuyển)", false, function(v)
     if v then
         _G.AutoLog = true
         local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -964,7 +994,7 @@ Fire:AddToggle("Left", "Auto Fire (Teleport)", false, function(v)
         _G.AutoLog = false
     end
 end)
-Fire:AddToggle("Left", "Auto Fire (Teleport - Coal)", false, function(v)
+Fire:AddToggle("Left", "Tự Động Lửa (Than)", false, function(v)
     if v then
         _G.AutoCoal = true
         local player = game.Players.LocalPlayer
@@ -990,7 +1020,7 @@ Fire:AddToggle("Left", "Auto Fire (Teleport - Coal)", false, function(v)
         _G.AutoCoal = false
     end
 end)
-Fire:AddToggle("Left", "Auto Cooked (Teleport)", false, function(v)
+Fire:AddToggle("Left", "Tự Động Nấu Ăn (Dịch Chuyển)", false, function(v)
     if v then
         _G.AutoMorsel = true
         local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -1015,7 +1045,7 @@ Fire:AddToggle("Left", "Auto Cooked (Teleport)", false, function(v)
         _G.AutoMorsel = false
     end
 end)
-Fire:AddToggle("Left", "Auto Fire (Bring)", false, function(v)
+Fire:AddToggle("Left", "Tự Động Lửa (Mang)", false, function(v)
     if v then
         _G.BringLogs = true
         while _G.BringLogs do
@@ -1050,17 +1080,17 @@ Fire:AddToggle("Left", "Auto Cooked (Bring)", false, function(v)
         _G.BringMorsels = false
     end
  end)
-Fire:AddButton("Left", "Teleport To Camp", function()
+Fire:AddButton("Left", "Dịch Chuyển Đến Trại", function()
     local player = game.Players.LocalPlayer
     local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
         hrp.CFrame = CFrame.new(0.5406733155250549, 12.499372482299805, -0.718663215637207)
     end
 end)
-Fire:AddText("Left", "Using Auto Fire and Auto Cooked Teleport will be more effective than Bring and Bring may be buggy")
+Fire:AddText("Left", "Sử dụng Auto Fire và Auto Cooked Teleport sẽ hiệu quả hơn Bring và Bring có thể bị lỗi")
 Fire:RealLine("Left")
-Fire:AddTextLabel("Right", "Create")
-Fire:AddToggle("Right", "Auto Log (Bring)", false, function(v)
+Fire:AddTextLabel("Right", "Chế Tạo")
+Fire:AddToggle("Right", "Tự Động Gỗ (Mang Đến)", false, function(v)
     if v then
         _G.CollectLogs = true
         while _G.CollectLogs do
@@ -1078,7 +1108,7 @@ Fire:AddToggle("Right", "Auto Log (Bring)", false, function(v)
     end
 end)
 
-Fire:AddToggle("Right", "Auto Bolt (Bring)", false, function(v)
+Fire:AddToggle("Right", "Tự Động Đinh Tán (Mang Đến)", false, function(v)
     if v then
         _G.CollectBolt = true
         while _G.CollectBolt do
@@ -1095,7 +1125,7 @@ Fire:AddToggle("Right", "Auto Bolt (Bring)", false, function(v)
         _G.CollectMorsels = false
     end
 end)
-Fire:AddToggle("Right", "Auto Log (Teleport)", false, function(v)
+Fire:AddToggle("Right", "Tự Động Gỗ (Dịch Chuyển)", false, function(v)
     if v then
         _G.AutoLogs = true
         local player = game.Players.LocalPlayer
@@ -1122,7 +1152,7 @@ Fire:AddToggle("Right", "Auto Log (Teleport)", false, function(v)
     end
 end)
 
-Fire:AddToggle("Right", "Auto Bolt (Teleport)", false, function(v)
+Fire:AddToggle("Right", "Tự Động Đinh Tán (Dịch Chuyển)", false, function(v)
     if v then
         _G.AutoBolts = true
         local player = game.Players.LocalPlayer
@@ -1149,39 +1179,6 @@ Fire:AddToggle("Right", "Auto Bolt (Teleport)", false, function(v)
     end
 end)
 Fire:RealLine("Right")
-Web:AddTextLabel("Left", "Main")
-Web:AddTextbox("Left", "Webhook Url", "", function(text)
-end)
-Web:AddTextbox("Left", "Id Member/Name", "", function(text)
-end)
-Web:AddTextbox("Left", "Delay Time (Hour)", "1", function(text)
-end)
-Web:AddTextbox("Left", "Delay Time (Min)", "0", function(text)
-end)
-Web:AddToggle("Left", "Tag Everyone", false, function(v)
-end)
-Web:AddToggle("Left", "Start Webhook", false, function(v)
-end)
-Web:AddText("Left", "Please see webhook activity status below if 🔴 is inactive 🟢 is active 🟡 is maintenance")
-Web:AddLabel("Left", "Status : 🟢")
-Web:RealLine("Left")
-Web:AddTextLabel("Right", "Setting")
-Web:AddToggle("Right", "When You Die", false, function(v)
-end)
-Web:AddToggle("Right", "When Update Camp", false, function(v)
-end)
-Web:AddToggle("Right", "When To Night 100", false, function(v)
-end)
-Web:AddToggle("Right", "When You Expand Map", false, function(v)
-end)
-Web:AddToggle("Right", "When Missing Kid", false, function(v)
-end)
-Web:AddToggle("Right", "When You Win", false, function(v)
-end)
-Web:AddToggle("Right", "When Overnight", false, function(v)
-end)
-Web:AddToggle("Right", "When You Get Diamond", false, function(v)
-end)
-Web:AddToggle("Right", "When You Open Chest", false, function(v)
-end)
-Web:RealLine("Right")
+    else  
+    game:GetService("Players").LocalPlayer:Kick("Sai Key")  
+end
