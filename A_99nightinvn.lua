@@ -41,21 +41,16 @@ Tab:AddToggle("Left", "Tự Động Mở Rương (Auto)", false, function(v)
     local player = Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    if not _G.AutoChestData then
-        _G.AutoChestData = {running = false, originalCFrame = nil}
-    end
+
+    _G.AutoChestData = _G.AutoChestData or {running = false, originalCFrame = nil}
 
     local function getChests()
-        local chests = {}
-        for _, obj in ipairs(workspace:GetDescendants()) do
-            if obj:IsA("Model") and string.find(obj.Name, "Item Chest") then
-                table.insert(chests, obj)
-            end
-        end
-        return chests
+        return table.create(#workspace:GetDescendants(), function(_, obj)
+            return obj:IsA("Model") and obj.Name:find("Item Chest") and obj or nil
+        end)
     end
 
-    local function getPrompt(model)
+    local function getPrompts(model)
         local prompts = {}
         for _, obj in ipairs(model:GetDescendants()) do
             if obj:IsA("ProximityPrompt") then
@@ -65,27 +60,28 @@ Tab:AddToggle("Left", "Tự Động Mở Rương (Auto)", false, function(v)
         return prompts
     end
 
-    if v then
-        if _G.AutoChestData.running then return end
+    if v and not _G.AutoChestData.running then
         _G.AutoChestData.running = true
         _G.AutoChestData.originalCFrame = humanoidRootPart.CFrame
+
         task.spawn(function()
             while _G.AutoChestData.running do
-                local chests = getChests()
-                for _, chest in ipairs(chests) do
+                for _, chest in ipairs(getChests()) do
                     if not _G.AutoChestData.running then break end
+
                     local part = chest.PrimaryPart or chest:FindFirstChildWhichIsA("BasePart")
                     if part then
                         humanoidRootPart.CFrame = part.CFrame + Vector3.new(0, 6, 0)
-                        local prompts = getPrompt(chest)
-                        for _, prompt in ipairs(prompts) do
-                            fireproximityprompt(prompt, math.huge)
+
+                        for _, prompt in ipairs(getPrompts(chest)) do
+                            pcall(fireproximityprompt, prompt, math.huge)
                         end
+
                         local t = tick()
-                        while _G.AutoChestData.running and tick() - t < 4 do task.wait() end
+                        repeat task.wait() until not _G.AutoChestData.running or tick() - t >= 4
                     end
                 end
-                task.wait(0.1)
+                task.wait(0.2)
             end
         end)
     else
@@ -106,22 +102,18 @@ Tab:AddToggle("Left", "Rương Tự Động Mở (Gần)", false, function(v)
     local player = Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    if not _G.AutoChestNearby then
-        _G.AutoChestNearby = {running = false}
-    end
+
+    _G.AutoChestNearby = _G.AutoChestNearby or {running = false}
 
     local function getPromptsInRange(range)
         local prompts = {}
         for _, obj in ipairs(workspace:GetDescendants()) do
-            if obj:IsA("Model") and string.find(obj.Name, "Item Chest") then
+            if obj:IsA("Model") and obj.Name:find("Item Chest") then
                 local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                if part then
-                    local dist = (humanoidRootPart.Position - part.Position).Magnitude
-                    if dist <= range then
-                        for _, p in ipairs(obj:GetDescendants()) do
-                            if p:IsA("ProximityPrompt") then
-                                table.insert(prompts, p)
-                            end
+                if part and (humanoidRootPart.Position - part.Position).Magnitude <= range then
+                    for _, p in ipairs(obj:GetDescendants()) do
+                        if p:IsA("ProximityPrompt") then
+                            table.insert(prompts, p)
                         end
                     end
                 end
@@ -130,16 +122,14 @@ Tab:AddToggle("Left", "Rương Tự Động Mở (Gần)", false, function(v)
         return prompts
     end
 
-    if v then
-        if _G.AutoChestNearby.running then return end
+    if v and not _G.AutoChestNearby.running then
         _G.AutoChestNearby.running = true
         task.spawn(function()
             while _G.AutoChestNearby.running do
-                local prompts = getPromptsInRange(chestRange)
-                for _, prompt in ipairs(prompts) do
-                    fireproximityprompt(prompt, math.huge)
+                for _, prompt in ipairs(getPromptsInRange(chestRange)) do
+                    pcall(fireproximityprompt, prompt, math.huge)
                 end
-                task.wait(0.5)
+                task.wait(0.3)
             end
         end)
     else
@@ -155,31 +145,6 @@ Tab:AddButton("Left", "Dịch Chuyển Đến Rương", function()
     local nearestChest, nearestDist, targetPart
     for _, obj in ipairs(workspace:GetDescendants()) do
         if obj:IsA("Model") and string.find(obj.Name, "Item Chest") then
-            local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-            if part then
-                local dist = (humanoidRootPart.Position - part.Position).Magnitude
-                if not nearestDist or dist < nearestDist then
-                    nearestDist = dist
-                    nearestChest = obj
-                    targetPart = part
-                end
-            end
-        end
-    end
-
-    if targetPart then
-        humanoidRootPart.CFrame = targetPart.CFrame + Vector3.new(0, targetPart.Size.Y/2 + 6, 0)
-    end
-end)
-Tab:AddButton("Left", "Dịch Chuyển Đến Rìu Mạnh (Thử Nghiệm)", function()
-    local Players = game:GetService("Players")
-    local player = Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-
-    local nearestChest, nearestDist, targetPart
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        if obj:IsA("Model") and string.find(obj.Name, "Strong Axe") then
             local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
             if part then
                 local dist = (humanoidRootPart.Position - part.Position).Magnitude
@@ -213,27 +178,24 @@ Tab:AddToggle("Left", "Giết Aura", false, function(enabled)
     if enabled then
         local player = game.Players.LocalPlayer
         if not player then return end
-        _G.killAuraConn = game:GetService("RunService").Heartbeat:Connect(function()
+        local runService = game:GetService("RunService")
+
+        _G.killAuraConn = runService.Heartbeat:Connect(function()
             local char = player.Character
             if not char then return end
-            local humanoid = char:FindFirstChildOfClass("Humanoid")
             local hrp = char:FindFirstChild("HumanoidRootPart")
-            if not humanoid or not hrp then return end
+            if not hrp then return end
 
             local range = _G.killRange or 10
-            local players = game.Players:GetPlayers()
-
-            for i = 1, #players do
-                local target = players[i]
-                if target ~= player then
-                    local targetChar = target.Character
-                    if targetChar then
-                        local targetHum = targetChar:FindFirstChildOfClass("Humanoid")
-                        local targetHrp = targetChar:FindFirstChild("HumanoidRootPart")
-                        if targetHum and targetHrp then
-                            if (hrp.Position - targetHrp.Position).Magnitude <= range then
-                                targetHum.Health = 0
-                            end
+            for _, model in ipairs(workspace:GetDescendants()) do
+                if model:IsA("Model") and model ~= char then
+                    local hum = model:FindFirstChildOfClass("Humanoid")
+                    local targetHrp = model:FindFirstChild("HumanoidRootPart")
+                    if hum and targetHrp and hum.Health > 0 then
+                        if (hrp.Position - targetHrp.Position).Magnitude <= range then
+                            pcall(function()
+                                hum.Health = 0
+                            end)
                         end
                     end
                 end
@@ -367,64 +329,64 @@ local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
 local player = game.Players.LocalPlayer
 
-local flyUpLoop = false
-local flyUpNightLoop = false
-local connAllTime
-local connNightOnly
+local flyUpLoop, flyUpNightLoop = false, false
+local connAllTime, connNightOnly
+
+local function getTargetY(hrp)
+    local ray = Ray.new(hrp.Position, Vector3.new(0, -1000, 0))
+    local part, pos = workspace:FindPartOnRay(ray, hrp.Parent)
+    return (part and pos.Y or hrp.Position.Y) + 150
+end
 
 Tab:AddToggle("Left", "Bay Lên (Mọi Thời Gian)", false, function(v)
-    local character = player.Character
-    if not character then return end
-    local hrp = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not hrp or not humanoid then return end
+    local char = player.Character
+    if not char then return end
+    local hrp, hum = char:FindFirstChild("HumanoidRootPart"), char:FindFirstChildOfClass("Humanoid")
+    if not hrp or not hum then return end
 
     flyUpLoop = v
-    humanoid.PlatformStand = v
+    hum.PlatformStand = v
 
     if v then
-        local ray = Ray.new(hrp.Position, Vector3.new(0, -1000, 0))
-        local part, pos = workspace:FindPartOnRay(ray, hrp.Parent)
-        local targetY = (part and pos.Y or hrp.Position.Y) + 30
+        local targetY = getTargetY(hrp)
         connAllTime = RunService.Heartbeat:Connect(function()
             if not flyUpLoop or not hrp.Parent then return end
-            hrp.Velocity = Vector3.new(0, 0, 0)
+            hrp.Velocity = Vector3.zero
             hrp.CFrame = CFrame.new(hrp.Position.X, targetY, hrp.Position.Z)
         end)
-    else
-        if connAllTime then connAllTime:Disconnect() end
+    elseif connAllTime then
+        connAllTime:Disconnect()
+        connAllTime = nil
     end
 end)
 
 Tab:AddToggle("Left", "Bay Lên (Chỉ Buổi Tối)", false, function(v)
-    local character = player.Character
-    if not character then return end
-    local hrp = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not hrp or not humanoid then return end
+    local char = player.Character
+    if not char then return end
+    local hrp, hum = char:FindFirstChild("HumanoidRootPart"), char:FindFirstChildOfClass("Humanoid")
+    if not hrp or not hum then return end
 
     flyUpNightLoop = v
     if v then
-        local currentTime = Lighting.ClockTime
-        if currentTime >= 18 or currentTime < 6 then
-            humanoid.PlatformStand = true
-            local ray = Ray.new(hrp.Position, Vector3.new(0, -1000, 0))
-            local part, pos = workspace:FindPartOnRay(ray, hrp.Parent)
-            local targetY = (part and pos.Y or hrp.Position.Y) + 30
+        local t = Lighting.ClockTime
+        if t >= 18 or t < 6 then
+            hum.PlatformStand = true
+            local targetY = getTargetY(hrp)
             connNightOnly = RunService.Heartbeat:Connect(function()
                 if not flyUpNightLoop or not hrp.Parent then return end
-                local t = Lighting.ClockTime
-                if t >= 18 or t < 6 then
-                    hrp.Velocity = Vector3.new(0, 0, 0)
+                local currentT = Lighting.ClockTime
+                if currentT >= 18 or currentT < 6 then
+                    hrp.Velocity = Vector3.zero
                     hrp.CFrame = CFrame.new(hrp.Position.X, targetY, hrp.Position.Z)
                 end
             end)
         else
-            Tab:SetValue("Fly Up (Night Only)", false)
+            Tab:SetValue("Bay Lên (Chỉ Buổi Tối)", false)
         end
-    else
-        if connNightOnly then connNightOnly:Disconnect() end
-        humanoid.PlatformStand = false
+    elseif connNightOnly then
+        connNightOnly:Disconnect()
+        connNightOnly = nil
+        hum.PlatformStand = false
     end
 end)
 Tab:AddTextLabel("Left", "Khác")
