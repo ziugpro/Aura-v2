@@ -591,7 +591,7 @@ end)
 local UIS = game:GetService("UserInputService")
 local player = game.Players.LocalPlayer
 
-Tab:AddToggle("Right", "Tự Động Chặt Cây (Dịch Chuyển + Nhấn)", false, function(v)
+Tab:AddToggle("Right", "Tự Động Chặt Cây (v2)", false, function(v)
     _G.AutoChopTP = v
     if v then
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
