@@ -1,5 +1,10 @@
 local PremiumKeys = {  
     "JRTtibghwXeykmqzh4r3oCvzf35xtb",  
+    "pFdYNaK2Phe9RHnNetFx9SqENSRogD6c",
+    "GcrDNfuxZP7hxwxk6QSXex1tPVNbN4T8",
+    "tD0BspG5TJoxgNCDbNc6SomEYf80LzV4",
+    "ZFRKbdQfdYBi2uOKJMXtTdxeUjer8kxl",
+    "d8B9McZRre3f9bYwyzMaP25SPrze7BUu",
 }  
   
 local BlacklistKeys = {  
